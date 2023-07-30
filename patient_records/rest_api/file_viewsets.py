@@ -1,7 +1,12 @@
 from .serializers import MedicalFileSerializer
-from rest_framework import viewsets
-from patient_records.models import MedicalFile
+from rest_framework import viewsets, status
+from patient_records.models import MedicalFile, Patient
 from rest_framework.decorators import action
+from rest_framework.response import Response
+import mimetypes
+from django.http import FileResponse
+import os
+
 
 class MedicalFileViewSet(viewsets.ModelViewSet):
     queryset = MedicalFile.objects.all()
@@ -16,17 +21,40 @@ class MedicalFileViewSet(viewsets.ModelViewSet):
     def download(self, request, pk=None):
         medical_file = self.get_object()
         file_path = medical_file.file.path
-        with open(file_path, 'rb') as f:
-            file_data = f.read()
-        response = Response(file_data, content_type='application/octet-stream')
-        response['Content-Disposition'] = 'attachment; filename="%s"' % medical_file.file.name
-        return response
+        content_type, encoding = mimetypes.guess_type(file_path)
+
+        try:
+            with open(file_path, 'rb') as file:
+                if not content_type:
+                    print("inside if content-type")
+                    content_type = 'application/octet-stream'
+
+                filename = os.path.basename(file_path)
+                file_contents = file.read()  # Read the file contents into a variable
+
+            response = Response(file_contents, content_type=content_type)
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+            return response
+
+        except FileNotFoundError:
+            return Response({"error": status.HTTP_404_NOT_FOUND})
+
+    
+
+        
 
     
     @action(detail=True, methods=['POST'])
     def upload(self, request, pk=None):
-        medical_file = self.get_object()
+        # Retrieve the patient based on the provided pk (patient_id)
+        patient = Patient.objects.get(id=pk)
+
+        # Create a new MedicalFile object and assign the patient
+        medical_file = MedicalFile(patient=patient)
         medical_file.file = request.FILES['file']
         medical_file.save()
+
+        # Serialize the MedicalFile object and return the response
         serializer = MedicalFileSerializer(medical_file)
         return Response(serializer.data, status=status.HTTP_200_OK)
