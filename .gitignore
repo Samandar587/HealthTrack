@@ -1,2 +1,6 @@
 **/*/__pycache__/
+<<<<<<< HEAD
 *.env
+=======
+env/
+>>>>>>> refs/remotes/origin/main
