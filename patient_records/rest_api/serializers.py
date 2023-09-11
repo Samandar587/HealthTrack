@@ -20,7 +20,7 @@ class PatientSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
-class MedicalFileSerializer(serializers.ModelSerializer):
+class MedicalFileSerializer(serializers.ModelSerializer):    
     class Meta:
         model = MedicalFile
         fields = '__all__'

@@ -1,15 +1,24 @@
-FROM python:3.8-slim-buster
+FROM python:3.10
 
-ENV PYTHONDONTWRITEBYTECODE 1
+# Set environment variables
+ENV PYTHONWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-WORKDIR /app
+# Set the working directory in the container
+WORKDIR /app 
 
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+# Copy the requirements file into app container dir
+COPY requirements.txt /app/
 
-COPY . .
+# Install dependencies from requirements.txt file
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install gunicorn
 
+# Copy the content of the local dir into app dir
+COPY . /app/
+
+# Expose port 8000 for the Django app server
 EXPOSE 8000
 
-CMD ["python3", "manage.py", "runserver", "127.0.0.1:8000"]
+# Define the command to run the application
+CMD ["gunicorn", "HealthTrackAPI.wsgi:application", "--bind", "0.0.0.0:8000"]
