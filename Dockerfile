@@ -4,13 +4,9 @@ FROM python:3.10
 ENV PYTHONWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-<<<<<<< HEAD
 # Set the working directory in the container
 WORKDIR /app 
-=======
 
-WORKDIR /app
->>>>>>> refs/remotes/origin/main
 
 # Copy the requirements file into app container dir
 COPY requirements.txt /app/
